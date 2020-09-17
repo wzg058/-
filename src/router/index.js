@@ -10,6 +10,11 @@ const routes = [{
     component: Home,
     children: [
       {
+        path: '/',
+        name:'users',
+        redirect:'users'
+      },
+      {
         path: 'users',
         name: 'users',
         component: () => import('../components/secondaryRouting/users')

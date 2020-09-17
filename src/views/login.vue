@@ -36,12 +36,13 @@ export default {
       req(this.username, this.password).then((res) => {
         if (res.meta.status == 200) {
           sessionStorage.setItem("Authorization", res.data.token);
-            this.$message({
+          this.$message({
             message: "登录成功",
             type: "success",
-            onClose:()=>{
-                this.$router.replace('/home');
-            }
+            duration: 1000,
+            onClose: () => {
+              this.$router.replace("/home");
+            },
           });
         }
       });

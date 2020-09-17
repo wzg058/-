@@ -1,7 +1,17 @@
 <template>
   <div class="home">
     <el-container>
-      <el-header>铭儿后台管理系统</el-header>
+      <el-header>
+        铭儿后台管理系统
+        <el-button type="info" class="tui" @click="dialogFormVisible = true">退出</el-button>
+        <el-dialog :visible.sync="dialogFormVisible" width="25%">
+          确定要退出吗
+          <div slot="footer" class="dialog-footer">
+            <el-button @click="dialogFormVisible = false">取 消</el-button>
+            <el-button type="primary" @click="tui();dialogFormVisible = false">确 定</el-button>
+          </div>
+        </el-dialog>
+      </el-header>
       <el-container>
         <el-aside width="auto">
           <el-menu
@@ -12,6 +22,7 @@
             active-text-color="#ffd04b"
             :collapse="!isCollapse"
             :class="{wid:isCollapse}"
+            :unique-opened="true"
           >
             <i class="el-icon-set-up" @click="zhe"></i>
             <el-submenu :index="String(item.id)" v-for="(item,index) in list" :key="index">
@@ -40,6 +51,7 @@
 
 <script>
 import req from "../../request/menus";
+import { Message } from "element-ui";
 export default {
   props: {},
   data() {
@@ -53,21 +65,33 @@ export default {
         "el-icon-s-order",
         "el-icon-pie-chart",
       ],
+      dialogFormVisible: false,
     };
   },
   methods: {
     zhe() {
       this.isCollapse = !this.isCollapse;
     },
-    tiao(index,ind){
-      this.$router.replace('/home/'+this.list[index].children[ind].path);
-    }
+    tiao(index, ind) {
+      this.$router.replace("/home/" + this.list[index].children[ind].path);
+    },
+    tui() {
+      sessionStorage.removeItem("Authorization");
+      this.$router.replace("/login");
+    },
   },
   components: {},
   mounted() {
     req().then((res) => {
-      console.log(res.data);
       this.list = res.data;
+      if (res.meta.status == 400) {
+        Message({
+          message: '请先登录',
+          duration: 1000,
+          type: "error",
+        });
+        this.$router.replace("/login");
+      }
     });
   },
 };
@@ -85,6 +109,7 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
+  position: relative;
 }
 .el-menu {
   .el-icon-set-up {
@@ -102,5 +127,13 @@ export default {
 }
 .el-menu-vertical-demo {
   height: 100%;
+}
+.el-main {
+  margin: 0;
+  padding: 0;
+}
+.tui {
+  position: absolute;
+  right: 100px;
 }
 </style>
