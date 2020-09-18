@@ -5,6 +5,7 @@
 </template>
 
 <script>
+
 export default {
     props: {
 
@@ -19,6 +20,9 @@ export default {
     },
     components: {
 
+    },
+    mounted() {
+        
     },
 };
 </script>

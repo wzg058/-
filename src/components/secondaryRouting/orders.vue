@@ -6,7 +6,7 @@
     <div class="box">
       <div style="width:25%;margin-bottom:20px">
         <el-input placeholder="请输入内容" v-model="input3" class="input-with-select">
-          <el-button slot="append" icon="el-icon-search"></el-button>
+          <el-button slot="append" icon="el-icon-search" @click="cha"></el-button>
         </el-input>
       </div>
       <el-table :data="list" stripe style="width: 100%" border :max-height="hei-300">
@@ -25,11 +25,47 @@
         <el-table-column prop="create_time" label="下单时间" width="250"></el-table-column>
         <el-table-column prop="address" label="操作" class="btn">
           <template slot-scope="scope">
-            <el-button class="btn" type="success" icon="el-icon-location"></el-button>
-
+            <el-button class="btn" type="primary" icon="el-icon-edit" @click="dialogdizhi = true"></el-button>
+            <el-dialog title="修改地址" :visible.sync="dialogdizhi" width="40%">
+              <div class="sheng">
+                <span>
+                  <a>*</a> 省市区/县
+                </span>
+                <el-cascader :options="options" :props="{ expandTrigger: 'hover' }"></el-cascader>
+              </div>
+              <div class="sheng2">
+                <span>
+                  <a>*</a> 详细地址
+                </span>
+                <el-input v-model="a" class="xiangxi"></el-input>
+              </div>
+              <div slot="footer" class="dialog-footer">
+                <el-button @click="dialogdizhi = false">取 消</el-button>
+                <el-button type="primary" @click=";dialogdizhi = false">确 定</el-button>
+              </div>
+            </el-dialog>
             <el-button
               class="btn"
-              type="primary"
+              type="success"
+              icon="el-icon-location"
+              @click="schedule();dialogjindu = true"
+            ></el-button>
+            <el-dialog title="物流进度" :visible.sync="dialogjindu" width="40%">
+              <el-timeline :reverse="true">
+                <el-timeline-item
+                  v-for="(item, index) in activities"
+                  :key="index"
+                  :timestamp="item.timestamp"
+                >{{item.context}}</el-timeline-item>
+              </el-timeline>
+              <div slot="footer" class="dialog-footer">
+                <el-button @click="dialogjindu = false">取 消</el-button>
+                <el-button type="primary" @click=";dialogjindu = false">确 定</el-button>
+              </div>
+            </el-dialog>
+            <el-button
+              class="btn"
+              type="info"
               icon="el-icon-edit-outline"
               @click="row(scope.row);dialogForm = true"
             ></el-button>
@@ -50,6 +86,34 @@
               <div slot="footer" class="dialog-footer">
                 <el-button @click="dialogForm = false">取 消</el-button>
                 <el-button type="primary" @click="put();dialogForm = false">确 定</el-button>
+              </div>
+            </el-dialog>
+            <el-button
+              class="btn"
+              type="warning"
+              icon="el-icon-document"
+              @click="xinxi(scope.row);dialogxiangqing = true"
+            ></el-button>
+            <el-dialog title="订单详情" :visible.sync="dialogxiangqing" width="40%">
+              <div class="xin">
+                订单编号：
+                <el-tag type="warning">{{xiangxi.order_number}}</el-tag>
+              </div>
+              <div class="xin">
+                订单价格：
+                <el-tag type="info">{{xiangxi.order_price}}</el-tag>
+              </div>
+              <div class="xin">
+                是否发货：
+                <el-tag type="success">{{xiangxi.is_send}}</el-tag>
+              </div>
+              <div class="xin">
+                商品类型：
+                <el-tag>{{xiangxi.order_fapiao_title}}</el-tag>
+              </div>
+              <div slot="footer" class="dialog-footer">
+                <el-button @click="dialogxiangqing = false">取 消</el-button>
+                <el-button type="primary" @click=";dialogxiangqing = false">确 定</el-button>
               </div>
             </el-dialog>
           </template>
@@ -75,11 +139,17 @@
 import req from "../../../request/request";
 import date from "../../model/date";
 import { Message } from "element-ui";
+import options from "../../model/city_data2017_element";
 export default {
   props: {},
   data() {
     return {
+      a: "",
+      options: options,
       dialogForm: false,
+      dialogdizhi: false,
+      dialogjindu: false,
+      dialogxiangqing: false,
       pagenum: 1,
       pagesize: 10,
       list: [],
@@ -93,9 +163,47 @@ export default {
         pay_status: "",
         order_id: "",
       },
+      activities: [],
+      xiangxi: [],
     };
   },
   methods: {
+    cha() {
+      req({
+        url: "/orders",
+        method: "get",
+        params: {
+          user_id: this.input3,
+          pagenum: this.pagenum,
+          pagesize: this.pagesize,
+        },
+      }).then((res) => {
+        console.log(res, this.input3);
+      });
+    },
+    xinxi(row) {
+      req({
+        url: `orders/${row.order_id}`,
+        method: "get",
+      }).then((res) => {
+        console.log(res);
+        this.xiangxi = res.data;
+      });
+    },
+    schedule() {
+      req({
+        url: "/kuaidi/1106975712662",
+        method: "get",
+      }).then((res) => {
+        console.log(res);
+        this.activities = res.data;
+        Message({
+          message: res.meta.message,
+          duration: 1000,
+          type: "success",
+        });
+      });
+    },
     next() {
       this.pagenum += 1;
       this.reque();
@@ -158,6 +266,9 @@ export default {
   components: {},
   mounted() {
     this.hei = document.body.clientHeight;
+    onresize = () => {
+      this.hei = document.body.clientHeight;
+    };
     this.reque();
   },
 };
@@ -189,6 +300,37 @@ export default {
   }
   .btn {
     margin: 0 5px;
+  }
+  .el-cascader {
+    width: 100%;
+  }
+  .sheng2 {
+    margin-top: 20px;
+    display: flex;
+    align-items: center;
+    span {
+      display: inline-block;
+      width: 120px;
+      text-align: center;
+      a {
+        color: red;
+      }
+    }
+  }
+  .sheng {
+    display: flex;
+    align-items: center;
+    span {
+      display: inline-block;
+      width: 120px;
+      text-align: center;
+      a {
+        color: red;
+      }
+    }
+  }
+  .xin {
+    margin: 15px 0;
   }
 }
 </style>
