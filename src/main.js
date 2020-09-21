@@ -13,6 +13,10 @@ Vue.prototype.$echarts = echarts;
 Vue.use(VueAxios, axios)
 Vue.config.productionTip = false
 
+
+import ViewUI from 'view-design';
+import 'view-design/dist/styles/iview.css';
+Vue.use(ViewUI);
 let vue = new Vue({
   router,
   store,
